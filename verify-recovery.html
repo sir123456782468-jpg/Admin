@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كود الاستعادة - The Leader In English</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 20%, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-primary: #ef4444;
+            --border-color: rgba(239, 68, 68, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.8);
+        }
+        [data-theme="dark"] {
+            --bg-gradient: radial-gradient(circle at 50% 20%, #0f172a 0%, #0b1120 50%, #020617 100%);
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-primary: #f87171;
+            --border-color: rgba(248, 113, 113, 0.25);
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 25px; position: relative; }
+        .theme-toggle { position: absolute; top: 25px; left: 25px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 18px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 13px; z-index: 10; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(12px); }
+        header { text-align: center; margin-top: 15px; z-index: 2; }
+        .teacher-title { font-family: 'Cinzel', serif; font-size: 28px; font-weight: 800; color: var(--accent-primary); }
+        .form-container { width: 100%; max-width: 480px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 34px 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); backdrop-filter: blur(16px); margin: 20px 0; z-index: 2; text-align: center; }
+        .icon-circle { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; background: rgba(239, 68, 68, 0.1); border: 2px dashed var(--accent-primary); }
+        .form-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+        .form-desc { font-size: 14px; color: var(--text-muted); line-height: 1.9; margin-bottom: 8px; }
+        .email-badge { display: inline-block; direction: ltr; font-weight: 700; font-size: 14px; color: var(--accent-primary); background: rgba(239, 68, 68, 0.08); padding: 6px 14px; border-radius: 50px; margin-bottom: 24px; }
+        .code-input { width: 100%; padding: 16px; background: var(--input-bg); border: 2px solid var(--border-color); border-radius: 14px; color: var(--text-main); font-size: 30px; font-weight: 800; text-align: center; letter-spacing: 10px; direction: ltr; outline: none; }
+        .code-input::placeholder { letter-spacing: 6px; color: var(--text-muted); opacity: .5; }
+        .code-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 14px rgba(239, 68, 68, 0.25); }
+        .submit-btn-wrapper { border-radius: 16px; padding: 2px; overflow: hidden; margin-top: 18px; background: var(--accent-primary); }
+        .submit-btn { width: 100%; background: var(--card-bg); color: var(--text-main); border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; backdrop-filter: blur(15px); }
+        .submit-btn:hover:not(:disabled) { background: var(--accent-primary); color: #ffffff; }
+        .submit-btn:disabled { opacity: .7; cursor: not-allowed; }
+        .form-msg { display: none; margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.8; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--border-color); }
+        .form-msg.ok { background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.4); }
+        .links { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .link-btn { background: none; border: none; color: var(--accent-primary); font-size: 14px; font-weight: 700; cursor: pointer; }
+        .link-btn:disabled { color: var(--text-muted); cursor: not-allowed; }
+        .link-btn.muted { color: var(--text-muted); font-weight: 600; font-size: 13px; }
+        footer { font-size: 11px; color: var(--text-muted); text-align: center; z-index: 2; }
+    </style>
+</head>
+<body data-theme="light">
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span> <span id="themeText">الوضع الداكن</span>
+    </button>
+
+    <header>
+        <h1 class="teacher-title">Mr. Sherif Khafagy</h1>
+    </header>
+
+    <div class="form-container">
+        <div class="icon-circle">✉️</div>
+        <h2 class="form-title">كود استعادة الحساب</h2>
+        <p class="form-desc">إذا كان البريد مسجلاً لدينا فقد أرسلنا كود الاستعادة إلى:</p>
+        <div class="email-badge" id="emailBadge"></div>
+
+        <form id="verifyForm" onsubmit="handleVerification(event)">
+            <input type="text" id="codeInput" class="code-input" placeholder="••••••" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required>
+            <div class="submit-btn-wrapper">
+                <button type="submit" class="submit-btn" id="verifyBtn">تحقق وتابع ➔</button>
+            </div>
+            <div class="form-msg" id="formMsg"></div>
+        </form>
+
+        <div class="links">
+            <button class="link-btn" id="resendBtn" onclick="resendCode()" disabled>إعادة إرسال الكود</button>
+            <button class="link-btn muted" onclick="changeEmail()">تعديل البريد الإلكتروني</button>
+        </div>
+    </div>
+
+    <footer>&copy; 2026 The Leader In English. All Rights Reserved.</footer>
+
+    <script>
+        const SUPABASE_URL = 'https://cxtmvsoxgfsormhcklfx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4dG12c294Z2Zzb3JtaGNrbGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNzI4MjQsImV4cCI6MjEwNTg0ODgyNH0.9zsPxYkMvHuRoe1R-XW8xOEUsE3IvoPP_r-iYXU_5s8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const RESEND_SECONDS = 60;
+        let tempData = null;
+        let timerId = null;
+
+        function toggleTheme() {
+            const t = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', t);
+            localStorage.setItem('platform_theme', t);
+            document.getElementById('themeIcon').innerText = t === 'dark' ? '☀️' : '🌙';
+            document.getElementById('themeText').innerText = t === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
+        }
+
+        function showMsg(text, ok) {
+            const box = document.getElementById('formMsg');
+            box.textContent = text;
+            box.className = 'form-msg' + (ok ? ' ok' : '');
+            box.style.display = 'block';
+        }
+
+        function maskEmail(email) {
+            const [name, domain] = email.split('@');
+            return name.slice(0, 2) + '***@' + domain;
+        }
+
+        function startTimer() {
+            const btn = document.getElementById('resendBtn');
+            let left = RESEND_SECONDS;
+            btn.disabled = true;
+            clearInterval(timerId);
+            btn.textContent = 'إعادة إرسال الكود (' + left + ')';
+            timerId = setInterval(() => {
+                left--;
+                if (left <= 0) {
+                    clearInterval(timerId);
+                    btn.disabled = false;
+                    btn.textContent = 'إعادة إرسال الكود';
+                } else {
+                    btn.textContent = 'إعادة إرسال الكود (' + left + ')';
+                }
+            }, 1000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('platform_theme') || 'light';
+            document.body.setAttribute('data-theme', saved);
+            document.getElementById('themeIcon').innerText = saved === 'dark' ? '☀️' : '🌙';
+            document.getElementById('themeText').innerText = saved === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
+
+            try { tempData = JSON.parse(localStorage.getItem('temp_recovery')); } catch (e) { tempData = null; }
+            if (!tempData || !tempData.email) {
+                window.location.replace('password_recovery.html');
+                return;
+            }
+            document.getElementById('emailBadge').textContent = maskEmail(tempData.email);
+            startTimer();
+            document.getElementById('codeInput').focus();
+        });
+
+        // أرقام فقط
+        document.getElementById('codeInput').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        async function handleVerification(event) {
+            event.preventDefault();
+            const code = document.getElementById('codeInput').value.trim();
+            const btn = document.getElementById('verifyBtn');
+
+            if (!/^\d{6,10}$/.test(code)) {
+                showMsg('برجاء إدخال الكود كاملاً كما وصلك على البريد.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق...';
+
+            try {
+                // التحقق يتم على سيرفر Supabase، وعند النجاح تُنشأ جلسة حقيقية
+                const { data, error } = await supabaseClient.auth.verifyOtp({
+                    email: tempData.email,
+                    token: code,
+                    type: 'recovery'
+                });
+
+                if (error) throw error;
+                if (!data || !data.session) throw new Error('no session');
+                sessionStorage.setItem('recovery_verified', tempData.email.toLowerCase());
+
+                showMsg('تم التحقق بنجاح ✅', true);
+                setTimeout(() => { window.location.href = 'Reset_password.html'; }, 700);
+
+            } catch (err) {
+                console.error('Verify error:', err);
+                showMsg('الكود غير صحيح أو انتهت صلاحيته. تأكد من الكود أو اطلب كوداً جديداً.');
+                btn.disabled = false;
+                btn.textContent = 'تحقق وتابع ➔';
+            }
+        }
+
+        async function resendCode() {
+            const btn = document.getElementById('resendBtn');
+            btn.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(tempData.email);
+                if (error) throw error;
+                showMsg('تم إرسال كود جديد إلى بريدك الإلكتروني.', true);
+                document.getElementById('codeInput').value = '';
+                startTimer();
+            } catch (err) {
+                console.error('Resend error:', err);
+                showMsg('تعذر إرسال الكود الآن، حاول بعد قليل.');
+                startTimer();
+            }
+        }
+
+        function changeEmail() {
+            localStorage.removeItem('temp_recovery');
+            window.location.href = 'password_recovery.html';
+        }
+    </script>
+</body>
+</html>

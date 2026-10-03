@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة تحكم | The Leader In English</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e5e7eb;--brand:#ef4444;--brand2:#ec4899;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--shadow:0 12px 35px rgba(15,23,42,.08)}
+[data-theme=dark]{--bg:#09111f;--card:#111b2e;--ink:#f8fafc;--muted:#94a3b8;--line:#24324a;--shadow:0 12px 35px rgba(0,0,0,.3)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Cairo,sans-serif}body{background:var(--bg);color:var(--ink);min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
+.top{height:70px;position:sticky;top:0;z-index:20;background:var(--card);border-bottom:2px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:45px;height:45px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;font-weight:900}.brand b{display:block;font-size:18px}.brand small{color:var(--brand);font-weight:800}
+.top-actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 13px;border-radius:11px;font-weight:800}.btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border:0}.btn.danger{color:#fff;background:var(--bad);border:0}.btn.ok{color:#fff;background:var(--ok);border:0}.btn.warn{color:#fff;background:var(--warn);border:0}.btn.sm{padding:6px 9px;font-size:12px}
+.layout{display:grid;grid-template-columns:245px 1fr;min-height:calc(100vh - 70px)}
+.side{background:var(--card);border-left:1px solid var(--line);padding:14px;position:sticky;top:70px;height:calc(100vh - 70px);overflow:auto}.side h4{color:var(--muted);font-size:12px;margin:8px 8px 10px}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:var(--ink);padding:12px;border-radius:13px;text-align:right;font-weight:800}.nav button.active,.nav button:hover{background:rgba(239,68,68,.1);color:var(--brand)}
+.main{padding:22px;max-width:1500px;width:100%;margin:auto}.view{display:none}.view.active{display:block}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}.head h1{font-size:24px}.head p{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}.stat{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;padding:18px}.stat b{display:block;font-size:28px}.stat span{color:var(--muted);font-size:13px;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}.card{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;padding:18px;margin-bottom:15px}.card h3{font-size:16px;margin-bottom:12px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:750px}.table th,.table td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:right;font-size:13px}.table th{color:var(--muted);font-size:12px}
+.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;background:rgba(100,116,139,.12)}.badge.ok{color:var(--ok);background:rgba(22,163,74,.1)}.badge.bad{color:var(--bad);background:rgba(220,38,38,.1)}.badge.warn{color:var(--warn);background:rgba(217,119,6,.1)}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:800}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--bg);color:var(--ink);outline:none}.field textarea{min-height:100px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand)}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.search{max-width:330px}
+.notice{padding:12px;border-radius:12px;background:rgba(239,68,68,.08);color:var(--ink);margin-bottom:12px;font-size:13px}.empty{text-align:center;padding:30px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.65);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}.modal.open{display:flex}.modalbox{background:var(--card);border:1px solid var(--line);width:min(850px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:20px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.x{border:0;background:transparent;color:var(--muted);font-size:25px}
+.toast{position:fixed;left:20px;bottom:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);padding:12px 15px;border-radius:13px;z-index:200;font-weight:800}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{position:relative;top:0;height:auto;border-left:0;border-bottom:1px solid var(--line)}.nav{grid-template-columns:repeat(4,1fr)}.nav button{text-align:center}.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){.top{height:auto;min-height:70px}.top-actions .hide-sm{display:none}.main{padding:12px}.stats{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.field.full{grid-column:auto}.nav{grid-template-columns:repeat(2,1fr)}.head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body data-theme="light">
+<header class="top">
+  <div class="brand"><div class="logo">LE</div><div><b>The Leader In English</b><small>Mr Sherif Khafagy — ADMIN</small></div></div>
+  <div class="top-actions">
+    <button class="btn hide-sm" id="themeBtn">🌙 الوضع</button>
+    <button class="btn danger" id="logoutBtn">تسجيل الخروج</button>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="side">
+  <h4>إدارة المنصة</h4>
+  <nav class="nav">
+    <button data-view="dashboard" class="active">📊 الرئيسية</button>
+    <button data-view="students">👨‍🎓 الطلاب</button>
+    <button data-view="courses">📚 الكورسات</button>
+    <button data-view="lessons">🎬 الدروس والملفات</button>
+    <button data-view="exams">📝 الامتحانات</button>
+    <button data-view="essays">✍️ تصحيح المقالي</button>
+    <button data-view="assignments">📋 الواجبات</button>
+    <button data-view="notifications">📢 الإشعارات</button>
+    <button data-view="codes">🔑 أكواد الاشتراك</button>
+    <button data-view="settings">⚙️ إعدادات المنصة</button>
+  </nav>
+</aside>
+
+<main class="main">
+<section id="dashboard" class="view active">
+  <div class="head"><div><h1>لوحة التحكم</h1><p>تحكم كامل في محتوى The Leader In English والطلاب والامتحانات.</p></div></div>
+  <div class="stats">
+    <div class="stat"><b id="stStudents">—</b><span>الطلاب</span></div>
+    <div class="stat"><b id="stCourses">—</b><span>الكورسات</span></div>
+    <div class="stat"><b id="stLessons">—</b><span>الدروس</span></div>
+    <div class="stat"><b id="stExams">—</b><span>الامتحانات</span></div>
+    <div class="stat"><b id="stEssays">—</b><span>مقالي في انتظار التصحيح</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>⚡ إجراءات سريعة</h3><div class="actions">
+      <button class="btn primary" onclick="openCourse()">+ كورس</button>
+      <button class="btn primary" onclick="openExam()">+ امتحان</button>
+      <button class="btn primary" onclick="openNotification()">+ إشعار</button>
+      <button class="btn" onclick="showView('students')">الطلاب</button>
+    </div></div>
+    <div class="card"><h3>🛡️ الحماية</h3><p class="notice">اللوحة لا تعتمد على إخفاء الأزرار فقط. صلاحيات الإدارة يجب أن تكون من RLS داخل Supabase، ولا تستخدم مفتاح Service Role داخل HTML.</p><span class="badge ok">RLS + is_admin</span></div>
+  </div>
+</section>
+
+<section id="students" class="view">
+  <div class="head"><div><h1>الطلاب</h1><p>مشاهدة كل الطلاب وحظر الحساب عند الحاجة.</p></div><input class="btn search" id="studentSearch" placeholder="بحث بالاسم أو البريد أو الهاتف"></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>البريد</th><th>السنة</th><th>الهاتف</th><th>الحالة</th><th>آخر ظهور</th><th>إجراء</th></tr></thead><tbody id="studentsBody"></tbody></table></div>
+</section>
+
+<section id="courses" class="view">
+  <div class="head"><div><h1>الكورسات</h1><p>إضافة وتعديل ونشر وإخفاء الكورسات.</p></div><button class="btn primary" onclick="openCourse()">+ إضافة كورس</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الكورس</th><th>السنة</th><th>السعر</th><th>الحالة</th><th>الترتيب</th><th>إجراء</th></tr></thead><tbody id="coursesBody"></tbody></table></div>
+</section>
+
+<section id="lessons" class="view">
+  <div class="head"><div><h1>الدروس والفيديوهات والـ PDF</h1><p>يوتيوب وGoogle Drive يُحفظان كروابط موارد ولا يظهر الرابط الخام للطالب.</p></div><button class="btn primary" onclick="openLesson()">+ إضافة درس</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الدرس</th><th>الكورس</th><th>النوع</th><th>المدة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="lessonsBody"></tbody></table></div>
+</section>
+
+<section id="exams" class="view">
+  <div class="head"><div><h1>الامتحانات</h1><p>وقت فتح/غلق + مدة + تسليم تلقائي + ظهور النتيجة + الأسئلة والمقالي.</p></div><button class="btn primary" onclick="openExam()">+ إضافة امتحان</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الامتحان</th><th>الكورس</th><th>فتح</th><th>غلق</th><th>المدة</th><th>النتيجة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="examsBody"></tbody></table></div>
+</section>
+
+<section id="essays" class="view">
+  <div class="head"><div><h1>تصحيح المقالي</h1><p>كل إجابة مقالية تظهر للمدرس، مع الدرجة والتعليق وتاريخ التصحيح.</p></div></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الطالب</th><th>السؤال</th><th>الإجابة</th><th>الدرجة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="essaysBody"></tbody></table></div>
+</section>
+
+<section id="assignments" class="view">
+  <div class="head"><div><h1>الواجبات</h1><p>إنشاء الواجبات ومتابعة التسليمات.</p></div><button class="btn primary" onclick="openAssignment()">+ إضافة واجب</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الواجب</th><th>الكورس</th><th>التسليم</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="assignmentsBody"></tbody></table></div>
+</section>
+
+<section id="notifications" class="view">
+  <div class="head"><div><h1>الإشعارات</h1><p>للجميع أو سنة دراسية أو كورس أو طالب محدد، مع جدولة اختيارية.</p></div><button class="btn primary" onclick="openNotification()">+ نشر إشعار</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>العنوان</th><th>الهدف</th><th>النشر</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="notificationsBody"></tbody></table></div>
+</section>
+
+<section id="codes" class="view">
+  <div class="head"><div><h1>أكواد الاشتراك</h1><p>توليد كود لكورس بعدد استخدامات وتاريخ انتهاء.</p></div><button class="btn primary" onclick="openCode()">+ كود جديد</button></div>
+  <div class="card table-wrap"><table class="table"><thead><tr><th>الكود</th><th>الكورس</th><th>الاستخدام</th><th>الانتهاء</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="codesBody"></tbody></table></div>
+</section>
+
+<section id="settings" class="view">
+  <div class="head"><div><h1>إعدادات المنصة</h1><p>اسم المنصة والمستر وروابط التواصل وحالة التسجيل.</p></div></div>
+  <div class="card"><form id="settingsForm" class="form">
+    <div class="field"><label>اسم المنصة</label><input id="setName"></div>
+    <div class="field"><label>اسم المستر</label><input id="setTeacher"></div>
+    <div class="field"><label>رابط اللوجو</label><input id="setLogo" dir="ltr"></div>
+    <div class="field"><label>رابط صورة المستر</label><input id="setAvatar" dir="ltr"></div>
+    <div class="field"><label>واتساب</label><input id="setWhatsapp" dir="ltr"></div>
+    <div class="field"><label>يوتيوب</label><input id="setYoutube" dir="ltr"></div>
+    <div class="field"><label>فيسبوك</label><input id="setFacebook" dir="ltr"></div>
+    <div class="field"><label>إنستجرام</label><input id="setInstagram" dir="ltr"></div>
+    <div class="field"><label>تيك توك</label><input id="setTiktok" dir="ltr"></div>
+    <div class="field"><label>التسجيل مفتوح؟</label><select id="setRegistration"><option value="true">نعم</option><option value="false">لا</option></select></div>
+    <div class="field full"><label>رسالة الصيانة</label><textarea id="setMaintenance"></textarea></div>
+    <div class="field full"><button class="btn primary" type="submit">حفظ الإعدادات</button></div>
+  </form></div>
+</section>
+</main></div>
+
+<!-- Modals -->
+<div class="modal" id="courseModal"><div class="modalbox"><div class="modalhead"><h3>بيانات الكورس</h3><button class="x" onclick="closeModal('courseModal')">×</button></div><form id="courseForm" class="form">
+<input type="hidden" id="courseId">
+<div class="field"><label>اسم الكورس</label><input id="courseTitle" required></div>
+<div class="field"><label>السنة الدراسية</label><input id="courseYear"></div>
+<div class="field"><label>السعر</label><input id="coursePrice" type="number" min="0" step=".01" value="0"></div>
+<div class="field"><label>الترتيب</label><input id="courseOrder" type="number" value="0"></div>
+<div class="field full"><label>الوصف</label><textarea id="courseDesc"></textarea></div>
+<div class="field"><label>رابط صورة الكورس</label><input id="courseThumb" dir="ltr"></div>
+<div class="field"><label>منشور؟</label><select id="coursePublished"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field full"><button class="btn primary" type="submit">حفظ</button></div>
+</form></div></div>
+
+<div class="modal" id="lessonModal"><div class="modalbox"><div class="modalhead"><h3>إضافة درس وموارده</h3><button class="x" onclick="closeModal('lessonModal')">×</button></div><form id="lessonForm" class="form">
+<div class="field"><label>الكورس</label><select id="lessonCourse" required></select></div>
+<div class="field"><label>اسم الدرس</label><input id="lessonTitle" required></div>
+<div class="field"><label>المدة بالثواني</label><input id="lessonDuration" type="number" min="0" value="0"></div>
+<div class="field"><label>الترتيب</label><input id="lessonOrder" type="number" value="0"></div>
+<div class="field"><label>منشور؟</label><select id="lessonPublished"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field"><label>نوع المورد</label><select id="resourceType"><option value="youtube">YouTube</option><option value="pdf">PDF</option><option value="drive">Google Drive</option><option value="link">رابط</option></select></div>
+<div class="field full"><label>عنوان المورد</label><input id="resourceTitle" placeholder="فيديو المحاضرة / مذكرة PDF"></div>
+<div class="field full"><label>الرابط</label><input id="resourceUrl" dir="ltr" placeholder="https://..."></div>
+<div class="field full"><label>رابط العرض/Embed اختياري</label><input id="resourceEmbed" dir="ltr" placeholder="YouTube embed أو Drive preview"></div>
+<div class="field full"><button class="btn primary" type="submit">حفظ الدرس والمورد</button></div>
+</form></div></div>
+
+<div class="modal" id="examModal"><div class="modalbox"><div class="modalhead"><h3>إعدادات الامتحان</h3><button class="x" onclick="closeModal('examModal')">×</button></div><form id="examForm" class="form">
+<input type="hidden" id="examId">
+<div class="field"><label>اسم الامتحان</label><input id="examTitle" required></div>
+<div class="field"><label>الكورس</label><select id="examCourse"></select></div>
+<div class="field full"><label>التعليمات</label><textarea id="examInstructions"></textarea></div>
+<div class="field"><label>يفتح من</label><input id="examOpen" type="datetime-local"></div>
+<div class="field"><label>يغلق في</label><input id="examClose" type="datetime-local"></div>
+<div class="field"><label>المدة بالدقائق</label><input id="examDuration" type="number" min="1" value="30"></div>
+<div class="field"><label>عدد المحاولات</label><input id="examAttempts" type="number" min="1" value="1"></div>
+<div class="field"><label>نسبة النجاح</label><input id="examPass" type="number" min="0" max="100" value="50"></div>
+<div class="field"><label>ظهور النتيجة</label><select id="examVisibility"><option value="immediate">بعد التسليم مباشرة</option><option value="after_end">بعد انتهاء وقت الامتحان</option><option value="manual">بعد ما المستر يقرر</option></select></div>
+<div class="field"><label>تسليم تلقائي</label><select id="examAuto"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field"><label>إظهار الإجابات الصحيحة</label><select id="examCorrect"><option value="false">لا</option><option value="true">نعم</option></select></div>
+<div class="field"><label>إظهار الدرجة</label><select id="examScore"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field"><label>عشوائية الأسئلة</label><select id="examShuffle"><option value="false">لا</option><option value="true">نعم</option></select></div>
+<div class="field"><label>منشور؟</label><select id="examPublished"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field full"><button class="btn primary" type="submit">حفظ الامتحان</button></div>
+</form></div></div>
+
+<div class="modal" id="questionModal"><div class="modalbox"><div class="modalhead"><h3>إضافة سؤال</h3><button class="x" onclick="closeModal('questionModal')">×</button></div><form id="questionForm" class="form">
+<input type="hidden" id="questionExamId">
+<div class="field"><label>نوع السؤال</label><select id="questionType"><option value="mcq">اختيار من متعدد</option><option value="true_false">صح/خطأ</option><option value="short_answer">إجابة قصيرة</option><option value="essay">مقالي</option></select></div>
+<div class="field"><label>الدرجة</label><input id="questionPoints" type="number" min="0" step=".5" value="1"></div>
+<div class="field full"><label>نص السؤال</label><textarea id="questionText" required></textarea></div>
+<div class="field full"><label>الاختيارات — اكتب كل اختيار في سطر</label><textarea id="questionOptions" placeholder="أول اختيار&#10;ثاني اختيار&#10;ثالث اختيار&#10;رابع اختيار"></textarea></div>
+<div class="field"><label>رقم/معرف الاختيار الصحيح</label><input id="questionCorrect" placeholder="a أو b أو c أو d"></div>
+<div class="field full"><label>شرح الإجابة</label><textarea id="questionExplanation"></textarea></div>
+<div class="field full"><button class="btn primary" type="submit">إضافة السؤال</button></div>
+</form></div></div>
+
+<div class="modal" id="essayModal"><div class="modalbox"><div class="modalhead"><h3>تصحيح الإجابة المقالية</h3><button class="x" onclick="closeModal('essayModal')">×</button></div>
+<div id="essayPreview" class="notice"></div>
+<form id="essayForm" class="form"><input type="hidden" id="essayId">
+<div class="field"><label>الدرجة المستحقة</label><input id="essayGrade" type="number" min="0" step=".5" required></div>
+<div class="field"><label>الحالة</label><select id="essayStatus"><option value="graded">تم التصحيح</option><option value="returned">تم الإرجاع للطالب</option></select></div>
+<div class="field full"><label>تعليق المستر</label><textarea id="essayComment"></textarea></div>
+<div class="field full"><button class="btn primary" type="submit">حفظ التصحيح</button></div>
+</form></div></div>
+
+<div class="modal" id="notificationModal"><div class="modalbox"><div class="modalhead"><h3>نشر إشعار</h3><button class="x" onclick="closeModal('notificationModal')">×</button></div><form id="notificationForm" class="form">
+<div class="field"><label>العنوان</label><input id="notifTitle" required></div>
+<div class="field"><label>السنة الدراسية — اتركه فارغاً للجميع</label><input id="notifYear"></div>
+<div class="field"><label>الكورس المستهدف</label><select id="notifCourse"><option value="">الجميع</option></select></div>
+<div class="field"><label>رقم الطالب UUID اختياري</label><input id="notifStudent" dir="ltr"></div>
+<div class="field"><label>وقت النشر</label><input id="notifPublish" type="datetime-local"></div>
+<div class="field"><label>وقت الانتهاء</label><input id="notifExpire" type="datetime-local"></div>
+<div class="field full"><label>النص</label><textarea id="notifBody" required></textarea></div>
+<div class="field full"><button class="btn primary" type="submit">نشر</button></div>
+</form></div></div>
+
+<div class="modal" id="assignmentModal"><div class="modalbox"><div class="modalhead"><h3>إضافة واجب</h3><button class="x" onclick="closeModal('assignmentModal')">×</button></div><form id="assignmentForm" class="form">
+<div class="field"><label>العنوان</label><input id="assignTitle" required></div>
+<div class="field"><label>الكورس</label><select id="assignCourse"></select></div>
+<div class="field"><label>موعد التسليم</label><input id="assignDue" type="datetime-local"></div>
+<div class="field"><label>الدرجة</label><input id="assignMax" type="number" min="0" value="10"></div>
+<div class="field"><label>الحالة</label><select id="assignStatus"><option value="published">منشور</option><option value="draft">مسودة</option><option value="closed">مغلق</option></select></div>
+<div class="field full"><label>الوصف</label><textarea id="assignDesc"></textarea></div>
+<div class="field full"><label>رابط الملف إن وجد</label><input id="assignFile" dir="ltr"></div>
+<div class="field full"><button class="btn primary" type="submit">حفظ</button></div>
+</form></div></div>
+
+<div class="modal" id="codeModal"><div class="modalbox"><div class="modalhead"><h3>إنشاء كود اشتراك</h3><button class="x" onclick="closeModal('codeModal')">×</button></div><form id="codeForm" class="form">
+<div class="field"><label>الكورس</label><select id="codeCourse" required></select></div>
+<div class="field"><label>عدد الاستخدامات</label><input id="codeUses" type="number" min="1" value="1"></div>
+<div class="field"><label>تاريخ الانتهاء</label><input id="codeExpire" type="datetime-local"></div>
+<div class="field full"><button class="btn primary" type="submit">توليد الكود</button></div>
+</form></div></div>
+
+<div id="toast" class="toast" style="display:none"></div>
+<script>
+const SUPABASE_URL='https://cxtmvsoxgfsormhcklfx.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4dG12c294Z2Zzb3JtaGNrbGZ4IiwiaWF0IjoxNzkwMjcyODI0LCJleHAiOjIxMDU4NDg4MjB9.9zsPxYkMvHuRoe1R-XW8xOEUsE3IvoPP_r-iYXU_5s8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let courses=[], currentUser=null;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){$('toast').textContent=m;$('toast').style.display='block';clearTimeout(window.__tt);window.__tt=setTimeout(()=>$('toast').style.display='none',3000)}
+function closeModal(id){$(id).classList.remove('open')}
+function openModal(id){$(id).classList.add('open')}
+function showView(id){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===id));loadView(id)}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('themeBtn').onclick=()=>{const t=document.body.dataset.theme==='dark'?'light':'dark';document.body.dataset.theme=t;localStorage.setItem('admin_theme',t)}
+document.body.dataset.theme=localStorage.getItem('admin_theme')||'light';
+$('logoutBtn').onclick=async()=>{await sb.auth.signOut({scope:'local'});location.replace('signin.html')};
+
+function dt(v){return v?new Date(v).toLocaleString('ar-EG'):'—'}
+function isoLocal(v){if(!v)return '';const d=new Date(v);const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
+async function adminGuard(){
+  const {data,error}=await sb.auth.getSession();
+  if(error||!data.session){location.replace('signin.html');return}
+  currentUser=data.session.user;
+  const {data:isAdmin,error:e}=await sb.rpc('is_admin');
+  if(e||isAdmin!==true){location.replace('home.html');return}
+  await loadAll();
+}
+async function loadAll(){await loadCourses();await loadDashboard();await loadStudents();await loadLessons();await loadExams();await loadEssays();await loadAssignments();await loadNotifications();await loadCodes();await loadSettings();fillCourseSelects()}
+async function loadCourses(){
+  const {data,error}=await sb.from('courses').select('*').order('sort_order');
+  if(error){toast('خطأ في تحميل الكورسات: '+error.message);return}
+  courses=data||[]; renderCourses();
+}
+function renderCourses(){
+  $('coursesBody').innerHTML=courses.length?courses.map(c=>`<tr><td><b>${esc(c.title)}</b><br><small>${esc(c.description||'')}</small></td><td>${esc(c.academic_year||'—')}</td><td>${Number(c.price||0)} ج</td><td><span class="badge ${c.is_published?'ok':'warn'}">${c.is_published?'منشور':'مخفي'}</span></td><td>${c.sort_order}</td><td><div class="actions"><button class="btn sm" onclick="editCourse('${c.id}')">تعديل</button><button class="btn sm ${c.is_published?'warn':'ok'}" onclick="toggleCourse('${c.id}',${!c.is_published})">${c.is_published?'إخفاء':'نشر'}</button><button class="btn sm danger" onclick="deleteCourse('${c.id}')">حذف</button></div></td></tr>`).join(''):'<tr><td colspan="6" class="empty">لا توجد كورسات</td></tr>';
+}
+function openCourse(c=null){
+  $('courseId').value=c?.id||'';$('courseTitle').value=c?.title||'';$('courseYear').value=c?.academic_year||'';$('coursePrice').value=c?.price??0;$('courseOrder').value=c?.sort_order??0;$('courseDesc').value=c?.description||'';$('courseThumb').value=c?.thumbnail_url||'';$('coursePublished').value=String(c?.is_published??false);openModal('courseModal')
+}
+function editCourse(id){openCourse(courses.find(x=>x.id===id))}
+$('courseForm').onsubmit=async e=>{e.preventDefault();const id=$('courseId').value;const payload={title:$('courseTitle').value.trim(),academic_year:$('courseYear').value.trim()||null,price:Number($('coursePrice').value||0),sort_order:Number($('courseOrder').value||0),description:$('courseDesc').value.trim()||null,thumbnail_url:$('courseThumb').value.trim()||null,is_published:$('coursePublished').value==='true'};let r=id?await sb.from('courses').update(payload).eq('id',id):await sb.from('courses').insert({...payload,created_by:currentUser.id});if(r.error){toast(r.error.message);return}closeModal('courseModal');toast('تم حفظ الكورس');await loadCourses();fillCourseSelects();loadDashboard()}
+async function toggleCourse(id,v){const r=await sb.from('courses').update({is_published:v}).eq('id',id);if(r.error)toast(r.error.message);else{toast('تم تحديث حالة الكورس');loadCourses()}}
+async function deleteCourse(id){if(!confirm('حذف الكورس بكل دروسه وامتحاناته؟'))return;const r=await sb.from('courses').delete().eq('id',id);if(r.error)toast(r.error.message);else{toast('تم الحذف');loadCourses();loadDashboard()}}
+
+function fillCourseSelects(){
+  const opts=courses.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('');
+  ['lessonCourse','examCourse','assignCourse','codeCourse'].forEach(id=>$(id).innerHTML=opts);
+  $('notifCourse').innerHTML='<option value="">الجميع</option>'+opts;
+}
+async function loadDashboard(){
+  const [a,b,c,d,e]=await Promise.all([
+    sb.from('profiles').select('id',{count:'exact',head:true}).eq('role','student'),
+    sb.from('courses').select('id',{count:'exact',head:true}),
+    sb.from('lessons').select('id',{count:'exact',head:true}),
+    sb.from('quizzes').select('id',{count:'exact',head:true}),
+    sb.from('essay_submissions').select('id',{count:'exact',head:true}).eq('status','pending')
+  ]);
+  $('stStudents').textContent=a.count??0;$('stCourses').textContent=b.count??0;$('stLessons').textContent=c.count??0;$('stExams').textContent=d.count??0;$('stEssays').textContent=e.count??0;
+}
+let studentCache=[];
+async function loadStudents(){
+ const {data,error}=await sb.from('profiles').select('*').eq('role','student').order('created_at',{ascending:false});if(error){toast(error.message);return}studentCache=data||[];renderStudents()
+}
+function renderStudents(){
+ const q=($('studentSearch').value||'').toLowerCase();
+ const a=studentCache.filter(x=>(`${x.first_name||''} ${x.middle_name||''} ${x.last_name||''} ${x.email||''} ${x.phone_number||''}`).toLowerCase().includes(q));
+ $('studentsBody').innerHTML=a.map(s=>`<tr><td><b>${esc([s.first_name,s.middle_name,s.last_name].filter(Boolean).join(' '))}</b></td><td dir="ltr">${esc(s.email)}</td><td>${esc(s.academic_year||'—')}</td><td dir="ltr">${esc(s.phone_number||'—')}</td><td><span class="badge ${s.is_blocked?'bad':'ok'}">${s.is_blocked?'محظور':'نشط'}</span></td><td>${dt(s.last_seen_at)}</td><td><button class="btn sm ${s.is_blocked?'ok':'danger'}" onclick="blockStudent('${s.id}',${!s.is_blocked})">${s.is_blocked?'فك الحظر':'حظر'}</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">لا توجد نتائج</td></tr>';
+}
+$('studentSearch').oninput=renderStudents;
+async function blockStudent(id,v){const r=await sb.from('profiles').update({is_blocked:v}).eq('id',id);if(r.error)toast(r.error.message);else{toast(v?'تم حظر الطالب':'تم فك الحظر');loadStudents()}}
+
+async function loadLessons(){
+ const {data,error}=await sb.from('lessons').select('id,title,course_id,duration_seconds,is_published,sort_order,courses(title)').order('sort_order');
+ if(error){toast(error.message);return}
+ $('lessonsBody').innerHTML=(data||[]).map(l=>`<tr><td>${esc(l.title)}</td><td>${esc(l.courses?.title||'—')}</td><td>درس + موارد</td><td>${Math.round((l.duration_seconds||0)/60)} د</td><td><span class="badge ${l.is_published?'ok':'warn'}">${l.is_published?'منشور':'مخفي'}</span></td><td><button class="btn sm danger" onclick="deleteLesson('${l.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دروس</td></tr>';
+}
+function openLesson(){fillCourseSelects();$('lessonForm').reset();openModal('lessonModal')}
+$('lessonForm').onsubmit=async e=>{e.preventDefault();const payload={course_id:$('lessonCourse').value,title:$('lessonTitle').value.trim(),duration_seconds:Number($('lessonDuration').value||0),sort_order:Number($('lessonOrder').value||0),is_published:$('lessonPublished').value==='true'};let r=await sb.from('lessons').insert(payload).select('id').single();if(r.error){toast(r.error.message);return}const res={lesson_id:r.data.id,resource_type:$('resourceType').value,title:$('resourceTitle').value.trim()||$('lessonTitle').value.trim(),url:$('resourceUrl').value.trim()||$('resourceEmbed').value.trim()||null,is_published:true};const rr=await sb.from('resources').insert(res);if(rr.error){await sb.from('lessons').delete().eq('id',r.data.id);toast(rr.error.message);return}closeModal('lessonModal');toast('تم إنشاء الدرس والمورد');loadLessons();loadDashboard()}
+async function deleteLesson(id){if(!confirm('حذف الدرس وكل موارده؟'))return;const r=await sb.from('lessons').delete().eq('id',id);if(r.error)toast(r.error.message);else{toast('تم الحذف');loadLessons();loadDashboard()}}
+
+async function loadExams(){
+ const {data,error}=await sb.from('quizzes').select('*,courses(title)').order('created_at',{ascending:false});if(error){toast(error.message);return}
+ $('examsBody').innerHTML=(data||[]).map(q=>`<tr><td><b>${esc(q.title)}</b></td><td>${esc(q.courses?.title||'—')}</td><td>${dt(q.open_at)}</td><td>${dt(q.close_at)}</td><td>${q.duration_minutes} د</td><td>${q.result_visibility==='immediate'?'فوري':q.result_visibility==='after_end'?'بعد الغلق':'يدوي'}</td><td><span class="badge ${q.is_published?'ok':'warn'}">${q.is_published?'منشور':'مخفي'}</span></td><td><div class="actions"><button class="btn sm" onclick="editExam('${q.id}')">إعدادات</button><button class="btn sm" onclick="addQuestion('${q.id}')">+ سؤال</button><button class="btn sm danger" onclick="deleteExam('${q.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="8" class="empty">لا توجد امتحانات</td></tr>';
+}
+function openExam(q=null){
+ fillCourseSelects();$('examId').value=q?.id||'';$('examTitle').value=q?.title||'';$('examCourse').value=q?.course_id||courses[0]?.id||'';$('examInstructions').value=q?.instructions||'';$('examOpen').value=isoLocal(q?.open_at);$('examClose').value=isoLocal(q?.close_at);$('examDuration').value=q?.duration_minutes??30;$('examPass').value=q?.pass_percent??50;$('examVisibility').value=q?.result_visibility||'immediate';$('examAuto').value=String(q?.auto_submit??true);$('examCorrect').value=String(q?.show_correct_answers??false);$('examScore').value=String(q?.show_score??true);$('examShuffle').value=String(q?.shuffle_questions??false);$('examPublished').value=String(q?.is_published??false);openModal('examModal')
+}
+async function editExam(id){const {data,error}=await sb.from('quizzes').select('*').eq('id',id).single();if(error)toast(error.message);else openExam(data)}
+$('examForm').onsubmit=async e=>{e.preventDefault();const id=$('examId').value;const payload={title:$('examTitle').value.trim(),course_id:$('examCourse').value||null,instructions:$('examInstructions').value.trim()||null,open_at:$('examOpen').value?new Date($('examOpen').value).toISOString():null,close_at:$('examClose').value?new Date($('examClose').value).toISOString():null,duration_minutes:Number($('examDuration').value),duration_minutes:Number($('examDuration').value),pass_percent:Number($('examPass').value),result_visibility:$('examVisibility').value,auto_submit:$('examAuto').value==='true',published:$('examPublished').value==='true'};const r=id?await sb.from('quizzes').update(payload).eq('id',id):await sb.from('quizzes').insert({...payload,created_by:currentUser.id});if(r.error){toast(r.error.message);return}closeModal('examModal');toast('تم حفظ الامتحان');loadExams();loadDashboard()}
+function addQuestion(id){$('questionExamId').value=id;$('questionForm').reset();$('questionExamId').value=id;openModal('questionModal')}
+$('questionForm').onsubmit=async e=>{e.preventDefault();const opts=$('questionOptions').value.split('\n').map(x=>x.trim()).filter(Boolean).map((text,i)=>({id:String.fromCharCode(97+i),text}));const qPayload={quiz_id:$('questionExamId').value,question_type:$('questionType').value,question_text:$('questionText').value.trim(),options:opts,points:Number($('questionPoints').value||1),sort_order:0};const r=await sb.from('quiz_questions').insert(qPayload).select('id').single();if(r.error){toast(r.error.message);return}const keyPayload={question_id:r.data.id,correct_option:$('questionCorrect').value.trim()||null,correct_answer:$('questionCorrectText')?.value.trim()||null,explanation:$('questionExplanation').value.trim()||null};const k=await sb.from('quiz_question_keys').insert(keyPayload);if(k.error){await sb.from('quiz_questions').delete().eq('id',r.data.id);toast(k.error.message);return}closeModal('questionModal');toast('تمت إضافة السؤال والإجابة الصحيحة بأمان')}
+async function deleteExam(id){if(!confirm('حذف الامتحان وكل أسئلته ومحاولاته؟'))return;const r=await sb.from('quizzes').delete().eq('id',id);if(r.error)toast(r.error.message);else{toast('تم الحذف');loadExams();loadDashboard()}}
+
+let essayCache=[];
+async function loadEssays(){
+ const {data,error}=await sb.from('essay_submissions').select('*,profiles(first_name,middle_name,last_name),quiz_questions(question_text)').order('created_at',{ascending:false});if(error){toast(error.message);return}essayCache=data||[];$('essaysBody').innerHTML=essayCache.map(x=>`<tr><td>${esc([x.profiles?.first_name,x.profiles?.middle_name,x.profiles?.last_name].filter(Boolean).join(' '))}</td><td>${esc(x.quiz_questions?.question_text||'')}</td><td style="max-width:350px;white-space:pre-wrap">${esc(x.answer_text)}</td><td>${x.teacher_score??'—'}</td><td><span class="badge ${x.teacher_score==null?'warn':'ok'}">${x.teacher_score==null?'في الانتظار':'تم التصحيح'}</span></td><td><button class="btn sm primary" onclick="gradeEssay('${x.id}')">تصحيح</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد إجابات مقالية</td></tr>';
+}
+function gradeEssay(id){const x=essayCache.find(a=>a.id===id);if(!x)return;$('essayId').value=id;$('essayGrade').value=x.teacher_score??'';$('essayGrade').max=x.teacher_score;$('essayComment').value=x.teacher_feedback||'';$('essayPreview').innerHTML='<b>إجابة الطالب:</b><br>'+esc(x.answer_text)+'<br><br><b>الدرجة القصوى:</b> '+esc(x.teacher_score);openModal('essayModal')}
+$('essayForm').onsubmit=async e=>{e.preventDefault();const id=$('essayId').value;const r=await sb.from('essay_submissions').update({teacher_score:Number($('essayGrade').value),teacher_feedback:$('essayComment').value.trim()||null,graded_by:currentUser.id,graded_at:new Date().toISOString()}).eq('id',id);if(r.error)toast(r.error.message);else{closeModal('essayModal');toast('تم حفظ التصحيح');loadEssays();loadDashboard()}}
+
+async function loadAssignments(){
+ const {data,error}=await sb.from('assignments').select('*,courses(title)').order('created_at',{ascending:false});if(error){toast(error.message);return}
+ $('assignmentsBody').innerHTML=(data||[]).map(x=>`<tr><td>${esc(x.title)}</td><td>${esc(x.courses?.title||'—')}</td><td>${dt(x.due_at)}</td><td><span class="badge">${esc(x.status)}</span></td><td><button class="btn sm danger" onclick="deleteAssignment('${x.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد واجبات</td></tr>'
+}
+function openAssignment(){fillCourseSelects();$('assignmentForm').reset();openModal('assignmentModal')}
+$('assignmentForm').onsubmit=async e=>{e.preventDefault();const p={title:$('assignTitle').value.trim(),course_id:$('assignCourse').value||null,due_at:$('assignDue').value?new Date($('assignDue').value).toISOString():null,max_score:Number($('assignMax').value||10),status:$('assignStatus').value,description:$('assignDesc').value.trim()||null,attachment_url:$('assignFile').value.trim()||null,created_by:currentUser.id};const r=await sb.from('assignments').insert(p);if(r.error)toast(r.error.message);else{closeModal('assignmentModal');toast('تم حفظ الواجب');loadAssignments()}}
+async function deleteAssignment(id){if(!confirm('حذف الواجب؟'))return;const r=await sb.from('assignments').delete().eq('id',id);if(r.error)toast(r.error.message);else loadAssignments()}
+
+async function loadNotifications(){
+ const {data,error}=await sb.from('announcements').select('*,courses(title)').order('created_at',{ascending:false});if(error){toast(error.message);return}
+ $('notificationsBody').innerHTML=(data||[]).map(x=>`<tr><td><b>${esc(x.title)}</b><br><small>${esc(x.body)}</small></td><td>${x.student_id?'طالب محدد':x.course_id?esc(x.courses?.title):x.academic_year?esc(x.academic_year):'الجميع'}</td><td>${dt(x.starts_at)}</td><td><span class="badge ${x.is_active?'ok':'bad'}">${x.is_active?'فعال':'متوقف'}</span></td><td><button class="btn sm danger" onclick="deleteNotification('${x.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد إشعارات</td></tr>'
+}
+function openNotification(){fillCourseSelects();$('notificationForm').reset();openModal('notificationModal')}
+$('notificationForm').onsubmit=async e=>{e.preventDefault();const p={title:$('notifTitle').value.trim(),body:$('notifBody').value.trim(),academic_year:$('notifYear').value.trim()||null,course_id:$('notifCourse').value||null,student_id:$('notifStudent').value.trim()||null,starts_at:$('notifPublish').value?new Date($('notifPublish').value).toISOString():new Date().toISOString(),expires_at:$('notifExpire').value?new Date($('notifExpire').value).toISOString():null,is_active:true,created_by:currentUser.id};const r=await sb.from('announcements').insert(p);if(r.error)toast(r.error.message);else{closeModal('notificationModal');toast('تم نشر الإشعار');loadNotifications()}}
+async function deleteNotification(id){if(!confirm('حذف الإشعار؟'))return;const r=await sb.from('announcements').delete().eq('id',id);if(r.error)toast(r.error.message);else loadNotifications()}
+
+async function loadCodes(){
+ const {data,error}=await sb.from('access_codes').select('*,courses(title)').order('created_at',{ascending:false});if(error){toast(error.message);return}
+ $('codesBody').innerHTML=(data||[]).map(x=>`<tr><td dir="ltr"><b>${esc(x.code)}</b></td><td>${esc(x.courses?.title||'')}</td><td>${x.used_count}/${x.max_uses}</td><td>${dt(x.expires_at)}</td><td><span class="badge ${x.is_active?'ok':'bad'}">${x.is_active?'فعال':'متوقف'}</span></td><td><button class="btn sm ${x.is_active?'danger':'ok'}" onclick="toggleCode('${x.id}',${!x.is_active})">${x.is_active?'إيقاف':'تفعيل'}</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد أكواد</td></tr>'
+}
+function openCode(){fillCourseSelects();$('codeForm').reset();openModal('codeModal')}
+function makeCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<12;i++)s+=a[Math.floor(Math.random()*a.length)];return s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8)}
+$('codeForm').onsubmit=async e=>{e.preventDefault();let code=makeCode();for(let i=0;i<5;i++){const q=await sb.from('access_codes').select('id').eq('code',code).maybeSingle();if(!q.data)break;code=makeCode()}const p={code,course_id:$('codeCourse').value,max_uses:Number($('codeUses').value||1),expires_at:$('codeExpire').value?new Date($('codeExpire').value).toISOString():null,is_active:true,created_by:currentUser.id};const r=await sb.from('access_codes').insert(p);if(r.error)toast(r.error.message);else{closeModal('codeModal');toast('الكود الجديد: '+code);loadCodes()}}
+async function toggleCode(id,v){const r=await sb.from('access_codes').update({is_active:v}).eq('id',id);if(r.error)toast(r.error.message);else loadCodes()}
+
+async function loadSettings(){
+ const {data,error}=await sb.from('platform_settings').select('*').eq('id',true).maybeSingle();if(error){toast(error.message);return}if(!data)return;
+ $('setName').value=data.platform_name||'';$('setTeacher').value=data.teacher_name||'';$('setLogo').value=data.logo_url||'';$('setAvatar').value=data.teacher_avatar_url||'';$('setWhatsapp').value=data.support_whatsapp||'';$('setYoutube').value=data.youtube_url||'';$('setFacebook').value=data.facebook_url||'';$('setInstagram').value=data.instagram_url||'';$('setTiktok').value=data.tiktok_url||'';$('setRegistration').value=String(data.registration_open);$('setMaintenance').value=data.maintenance_message||''
+}
+$('settingsForm').onsubmit=async e=>{e.preventDefault();const p={platform_name:$('setName').value.trim(),teacher_name:$('setTeacher').value.trim(),logo_url:$('setLogo').value.trim()||null,teacher_avatar_url:$('setAvatar').value.trim()||null,support_whatsapp:$('setWhatsapp').value.trim()||null,youtube_url:$('setYoutube').value.trim()||null,facebook_url:$('setFacebook').value.trim()||null,instagram_url:$('setInstagram').value.trim()||null,tiktok_url:$('setTiktok').value.trim()||null,registration_open:$('setRegistration').value==='true',maintenance_message:$('setMaintenance').value.trim()||null};const r=await sb.from('platform_settings').update(p).eq('id',true);if(r.error)toast(r.error.message);else toast('تم حفظ إعدادات المنصة')}
+
+async function loadView(id){if(id==='dashboard')return loadDashboard();if(id==='students')return loadStudents();if(id==='courses')return loadCourses();if(id==='lessons')return loadLessons();if(id==='exams')return loadExams();if(id==='essays')return loadEssays();if(id==='assignments')return loadAssignments();if(id==='notifications')return loadNotifications();if(id==='codes')return loadCodes();if(id==='settings')return loadSettings()}
+adminGuard();
+</script>
+</body>
+</html>
